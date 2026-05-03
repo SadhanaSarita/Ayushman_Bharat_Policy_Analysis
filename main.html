@@ -1,0 +1,1038 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ayushman Bharat — Critical Data Analysis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8dc;
+    --red: #c0392b;
+    --orange: #e67e22;
+    --gold: #c9a84c;
+    --green: #27ae60;
+    --muted: #7a7265;
+    --border: #bfb9ad;
+    --card: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 280;
+    line-height: 1.6;
+  }
+
+  /* MASTHEAD */
+  .masthead {
+    background: var(--ink);
+    color: var(--green);
+    padding: 60px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .masthead::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 48px,
+      rgba(255,255,255,0.03) 48px,
+      rgba(255,255,255,0.03) 49px
+    );
+    pointer-events: none;
+  }
+  .masthead-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .masthead h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    max-width: 760px;
+  }
+  .masthead h1 span { color: var(--blue); }
+  .masthead-sub {
+    margin-top: 16px;
+    font-size: 15px;
+    color: rgba(245,240,232,0.6);
+    max-width: 680px;
+  }
+  .masthead-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .meta-stat {
+    border-left: 2px solid var(--gold);
+    padding-left: 12px;
+  }
+  .meta-stat .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--paper);
+    display: block;
+  }
+  .meta-stat .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: rgba(140, 229, 245, 0.5);
+    text-transform: uppercase;
+  }
+
+  /* NAV */
+  .nav-tabs {
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    overflow-x: auto;
+    padding: 0 48px;
+    gap: 0;
+  }
+  .nav-tab {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 16px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+  .nav-tab:hover { color: var(--ink); }
+  .nav-tab.active {
+    color: var(--red);
+    border-bottom: 2px solid var(--red);
+  }
+
+  /* CONTENT */
+  .tab-panel { display: none; padding: 48px; max-width: 1200px; margin: 0 auto; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .section-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    font-weight: 900;
+    color: var(--cream);
+    line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .section-title-block {}
+  .section-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  /* CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+  }
+  .card-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+  }
+  .card-accent.red { background: var(--red); }
+  .card-accent.orange { background: var(--orange); }
+  .card-accent.gold { background: var(--gold); }
+  .card-accent.green { background: var(--green); }
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .card-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .card-value.red { color: var(--red); }
+  .card-value.orange { color: var(--orange); }
+  .card-value.gold { color: var(--gold); }
+  .card-value.green { color: var(--green); }
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* CHARTS */
+  .chart-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .chart-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .chart-source {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .chart-wrap { position: relative; }
+
+  /* FINDING BLOCKS */
+  .finding {
+    border-left: 3px solid var(--red);
+    padding: 20px 24px;
+    background: rgba(192, 57, 43, 0.04);
+    margin-bottom: 20px;
+  }
+  .finding-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+  .finding p {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.65;
+  }
+  .finding strong { font-weight: 500; }
+
+  /* TWO-COL */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  @media(max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* FRAUD TABLE */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .data-table thead tr {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .data-table thead th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+  }
+  .data-table tbody tr { border-bottom: 1px solid var(--border); }
+  .data-table tbody tr:nth-child(even) { background: var(--cream); }
+  .data-table td { padding: 12px 16px; vertical-align: top; }
+  .badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+  .badge.high { background: #fde8e8; color: var(--red); }
+  .badge.medium { background: #fdf3e7; color: var(--orange); }
+  .badge.low { background: #e8f8ef; color: var(--green); }
+
+  /* COVERAGE MAP TABLE */
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .state-card {
+    border: 1px solid var(--border);
+    padding: 16px;
+    background: var(--card);
+  }
+  .state-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--cream);
+    border-radius: 2px;
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+  .state-pct {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* RECOMMENDATIONS */
+  .rec-item {
+    display: flex;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rec-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--cream);
+    flex-shrink: 0;
+    line-height: 1;
+    min-width: 48px;
+  }
+  .rec-body h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .rec-body p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* FOOTER */
+  footer {
+    background: var(--ink);
+    color: rgba(245,240,232,0.45);
+    padding: 32px 48px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    line-height: 1.8;
+    margin-top: 80px;
+  }
+  footer strong { color: var(--gold); }
+
+  /* ANIMATE IN */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.5s ease forwards;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-label">Critical Data Analysis </div>
+  <h1>Ayushman Bharat<br /><span>Under the Lens</span></h1>
+  <div class="masthead-sub">A data-driven examination of coverage gaps, institutional fraud, and health outcome failures in India's flagship universal health scheme (AB-PMJAY, 2018–2025)</div>
+  <div class="masthead-meta">
+    <div class="meta-stat"><span class="num">50Cr+</span><span class="label">Target Beneficiaries</span></div>
+    <div class="meta-stat"><span class="num">₹9,406Cr</span><span class="label">2025 Budget</span></div>
+    <div class="meta-stat"><span class="num">7.49L</span><span class="label">Ghost Registrations (CAG)</span></div>
+    <div class="meta-stat"><span class="num">18×</span><span class="label">Budget Shortfall vs Need</span></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="switchTab('overview', this)">Overview</button>
+  <button class="nav-tab" onclick="switchTab('coverage', this)">Coverage Gaps</button>
+  <button class="nav-tab" onclick="switchTab('fraud', this)">Fraud & Implementation</button>
+  <button class="nav-tab" onclick="switchTab('outcomes', this)">Health Outcomes</button>
+  <button class="nav-tab" onclick="switchTab('recommendations', this)">Recommendations</button>
+</div>
+
+<!-- ====== TAB 1: OVERVIEW ====== -->
+<div id="tab-overview" class="tab-panel active">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-title-block">
+      <div class="section-eyebrow">Executive Summary</div>
+      <div class="section-title">What Is Ayushman Bharat — And Where Does It Fall Short?</div>
+    </div>
+  </div>
+
+  <div class="card-grid fade-in">
+    <div class="card"><div class="card-accent red"></div>
+      <div class="card-label">Budget Gap</div>
+      <div class="card-value red">₹83,500Cr</div>
+      <div class="card-desc">Difference between authorised hospital admissions (₹1,16,000 Cr) and total budget disbursed (2018–2024). This gap is borne by states or patients.</div>
+    </div>
+    <div class="card"><div class="card-accent orange"></div>
+      <div class="card-label">Avg. Payout per Claim</div>
+      <div class="card-value orange">₹4,100</div>
+      <div class="card-desc">Average actual payment per claim in 2022–23, against a nominal ₹5 lakh coverage promise. The gap is stark.</div>
+    </div>
+    <div class="card"><div class="card-accent gold"></div>
+      <div class="card-label">Unenrolled Eligible HHs</div>
+      <div class="card-value gold">~67%</div>
+      <div class="card-desc">About two-thirds of eligible households have not enrolled, per CII-BCG report. Awareness remains critically low.</div>
+    </div>
+    <div class="card"><div class="card-accent green"></div>
+      <div class="card-label">Cards Created (Mar 2025)</div>
+      <div class="card-value green">36.9Cr</div>
+      <div class="card-desc">Ayushman cards issued as of March 2025 — a large number, but card creation ≠ actual access to quality care.</div>
+    </div>
+  </div>
+
+  <div class="chart-block fade-in">
+    <div class="chart-title">Budget vs Utilisation</div>
+    <div class="chart-heading">Annual Budget Estimates vs Funds Utilized (₹ Crore)</div>
+    <div class="chart-source">Source: Ministry of Health & Family Welfare, Parliament replies (Feb 2024)</div>
+    <div class="chart-wrap" style="max-height:320px;">
+      <canvas id="budgetChart"></canvas>
+    </div>
+  </div>
+
+  <div class="two-col fade-in">
+    <div class="chart-block" style="margin-bottom:0">
+      <div class="chart-title">Claims Data</div>
+      <div class="chart-heading">Claims Made vs Settled (Millions)</div>
+      <div class="chart-source">Source: PMJAY Parliamentary Data, 2024</div>
+      <canvas id="claimsChart" style="max-height:240px"></canvas>
+    </div>
+    <div class="chart-block" style="margin-bottom:0">
+      <div class="chart-title">Hospital Empanelment</div>
+      <div class="chart-heading">Public vs Private Empanelled Hospitals</div>
+      <div class="chart-source">Source: NHA, March 2024 (29,972 hospitals)</div>
+      <canvas id="hospitalChart" style="max-height:240px"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ====== TAB 2: COVERAGE ====== -->
+<div id="tab-coverage" class="tab-panel">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-title-block">
+      <div class="section-eyebrow">Critical Flaw #1</div>
+      <div class="section-title">Who Is Left Out? Coverage Gaps & Exclusions</div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-accent red"></div>
+      <div class="card-label">Outdated Data Source</div>
+      <div class="card-value red" style="font-size:1.6rem">SECC 2011</div>
+      <div class="card-desc">Beneficiaries are identified from 14-year-old census data. Millions who became poor since 2011 are excluded. Millions who escaped poverty remain registered.</div>
+    </div>
+    <div class="card"><div class="card-accent orange"></div>
+      <div class="card-label">Missing: Outpatient Care</div>
+      <div class="card-value orange" style="font-size:1.6rem">0% OPD</div>
+      <div class="card-desc">The scheme covers only inpatient (hospitalisation) care. Most health expenditure in India is outpatient — medicines, diagnostics, consultations — which remain fully out-of-pocket.</div>
+    </div>
+    <div class="card"><div class="card-accent gold"></div>
+      <div class="card-label">Hospital Beds per 1000</div>
+      <div class="card-value gold">0.75</div>
+      <div class="card-desc">Effective beds per 1,000 beneficiaries in empanelled hospitals — far below the WHO-recommended 2 per 1,000, creating structural demand-supply mismatch.</div>
+    </div>
+    <div class="card"><div class="card-accent red"></div>
+      <div class="card-label">Non-participating States</div>
+      <div class="card-value red" style="font-size:1.6rem">5 States</div>
+      <div class="card-desc">Major states including West Bengal, Odisha, Delhi, and Telangana have opted out or run parallel schemes, causing fragmented coverage nationwide.</div>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">🔍 Key Finding — SECC Data Problem</div>
+    <p>The scheme was designed around the Socio-Economic Caste Census (SECC) of 2011. In 14 years, India's poverty landscape has shifted dramatically. <strong>Lakhs of ineligible beneficiaries remain enrolled</strong> while genuinely poor households formed after 2011 have no pathway to join, unless their state adopts alternative databases (which only some have done).</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">🔍 Key Finding — The "Missing Middle"</div>
+    <p>AB-PMJAY serves the very poor (SECC-listed). The middle class has private insurance or none. But a huge segment — informal workers just above the poverty line, urban migrants, gig economy workers — fall in the <strong>"missing middle"</strong>: too rich to qualify, too poor to afford private insurance. The scheme does not address this group at all.</p>
+  </div>
+
+  <div class="chart-block">
+    <div class="chart-title">Awareness Gap</div>
+    <div class="chart-heading">Enrollment Rate vs Eligible Households — Estimated</div>
+    <div class="chart-source">Source: CII-BCG Health Insurance Vision 2025 report</div>
+    <canvas id="enrollmentChart" style="max-height:280px"></canvas>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">🔍 Key Finding — State Funding Disputes</div>
+    <p>The Centre funds 60% and states 40% in most cases — but this ratio is disputed. Karnataka alleged it was bearing 75% of costs (Jan 2025), while the Centre claimed 60%. <strong>Beneficiaries are routinely caught in Centre–State disputes</strong>, with hospitals refusing AB-PMJAY cards citing non-receipt of government instructions or delayed reimbursements.</p>
+  </div>
+
+  <h3 style="font-family:'Playfair Display',serif; font-size:1.1rem; margin-bottom:16px; margin-top:8px;">State-wise Estimated Utilisation Rate</h3>
+  <div class="state-grid" id="stateGrid"></div>
+</div>
+
+<!-- ====== TAB 3: FRAUD ====== -->
+<div id="tab-fraud" class="tab-panel">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-title-block">
+      <div class="section-eyebrow">Critical Flaw #2</div>
+      <div class="section-title">Fraud, Ghost Beneficiaries & Implementation Failures</div>
+    </div>
+  </div>
+
+  <div class="finding" style="border-color:var(--red); background:rgba(192,57,43,0.06)">
+    <div class="finding-label">📋 Source: CAG Report No. 11 of 2023 — Performance Audit on PMJAY</div>
+    <p>India's Comptroller and Auditor General released the first-ever performance audit of PMJAY in August 2023, tabling it in Parliament. It found systemic fraud, data corruption, and governance failure across multiple states. The key findings are summarised below.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-accent red"></div>
+      <div class="card-label">Ghost Registrations</div>
+      <div class="card-value red">7,49,820</div>
+      <div class="card-desc">Beneficiaries linked to a single invalid number — 9999999999. Researchers believe hospitals created dummy registrations to claim funds.</div>
+    </div>
+    <div class="card"><div class="card-accent red"></div>
+      <div class="card-label">Dead Patients Treated</div>
+      <div class="card-value red">88,760</div>
+      <div class="card-desc">Patients died during treatment yet 2,14,923 new claims were filed for them. ₹6.97 crore was paid to hospitals for 3,903 such claims.</div>
+    </div>
+    <div class="card"><div class="card-accent orange"></div>
+      <div class="card-label">Simultaneous Hospitalisations</div>
+      <div class="card-value orange">78,396</div>
+      <div class="card-desc">Claims where a patient was supposedly admitted in multiple hospitals simultaneously — discharge date of one treatment was later than admission of next.</div>
+    </div>
+    <div class="card"><div class="card-accent orange"></div>
+      <div class="card-label">Excess Payments (4 States)</div>
+      <div class="card-value orange">₹57.53Cr</div>
+      <div class="card-desc">Overpayments made to empanelled hospitals in four states — Karnataka, Haryana, Chhattisgarh, and Punjab — identified by audit.</div>
+    </div>
+  </div>
+
+  <div class="chart-block">
+    <div class="chart-title">Database Anomalies from CAG Audit</div>
+    <div class="chart-heading">Scale of Irregularities Identified</div>
+    <div class="chart-source">Source: CAG Report No. 11 of 2023, Parliament of India</div>
+    <canvas id="fraudChart" style="max-height:300px"></canvas>
+  </div>
+
+  <h3 style="font-family:'Playfair Display',serif; font-size:1.15rem; margin-bottom:16px; margin-top:8px;">State-wise Fraud Concentration (CAG Audit)</h3>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>State</th>
+        <th>Primary Irregularity</th>
+        <th>Severity</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Chhattisgarh</strong></td>
+        <td>Dead patient claims, ghost registrations</td>
+        <td><span class="badge high">High</span></td>
+        <td>One of the worst-performing states in the CAG audit</td>
+      </tr>
+      <tr>
+        <td><strong>Haryana</strong></td>
+        <td>Simultaneous hospitalisation claims, excess payments</td>
+        <td><span class="badge high">High</span></td>
+        <td>26% of claims from Punjab & Haryana found fraudulent (Times of India, 2022)</td>
+      </tr>
+      <tr>
+        <td><strong>Madhya Pradesh</strong></td>
+        <td>Ghost beneficiaries, dead patient claims</td>
+        <td><span class="badge high">High</span></td>
+        <td>No IEC cell formed; poor awareness activities</td>
+      </tr>
+      <tr>
+        <td><strong>Kerala</strong></td>
+        <td>Post-death claims, simultaneous hospitalisations</td>
+        <td><span class="badge high">High</span></td>
+        <td>Despite high health indices, scheme fraud prevalent</td>
+      </tr>
+      <tr>
+        <td><strong>Tamil Nadu</strong></td>
+        <td>4,761 registrations against 7 Aadhaar numbers</td>
+        <td><span class="badge high">High</span></td>
+        <td>Aadhaar verification clearly bypassed</td>
+      </tr>
+      <tr>
+        <td><strong>Gujarat</strong></td>
+        <td>Male patients claiming maternity-linked benefits</td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>23,670 male patients in suspicious claim categories</td>
+      </tr>
+      <tr>
+        <td><strong>Jharkhand</strong></td>
+        <td>Patients paying out-of-pocket despite cashless promise</td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>Insurance company flagged 36 patients of one hospital</td>
+      </tr>
+      <tr>
+        <td><strong>Himachal Pradesh</strong></td>
+        <td>Beneficiaries paying for diagnostics themselves</td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>50 patients across 5 hospitals paid for tests out-of-pocket</td>
+      </tr>
+      <tr>
+        <td><strong>J&K / Ladakh</strong></td>
+        <td>16,865 ineligible beneficiaries enrolled (2018–2021)</td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>SHA found ineligible entries after data cleaning</td>
+      </tr>
+      <tr>
+        <td><strong>J&K</strong></td>
+        <td>459 patients paid out-of-pocket; 75 still unreimbursed</td>
+        <td><span class="badge low">Low–Medium</span></td>
+        <td>Reimbursement delays undermine cashless promise</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="finding">
+    <div class="finding-label">🔍 Systemic Finding — No Uniform Threshold for Beneficiary Approval</div>
+    <p>Out of 94.88 lakh rejected beneficiary applications, <strong>38.57 lakh (40.65%) were rejected despite having a match confidence score of 51–100</strong> — meaning they should have been approved. The CAG found that the NHA had not set any objective, uniform threshold for approval or rejection, leaving the process arbitrary and prone to both denial and fraud.</p>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">🔍 Systemic Finding — Technology Failure</div>
+    <p>The government claims AI and ML are used to detect fraud. Yet the CAG audit found the IT system had <strong>no mechanisms to prevent simultaneous hospitalisations</strong>, no validation controls to catch invalid dates of birth, unrealistic family sizes (up to 2,000+ members in a household), or duplicate Aadhaar registrations. The digital backbone of the scheme had fundamental integrity gaps.</p>
+  </div>
+</div>
+
+<!-- ====== TAB 4: OUTCOMES ====== -->
+<div id="tab-outcomes" class="tab-panel">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-title-block">
+      <div class="section-eyebrow">Critical Flaw #3</div>
+      <div class="section-title">Does It Actually Improve Health? Outcomes Data</div>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card"><div class="card-accent red"></div>
+      <div class="card-label">OOPE Reduction</div>
+      <div class="card-value red" style="font-size:1.5rem">Partial</div>
+      <div class="card-desc">While government claims ₹1.25 lakh crore savings in out-of-pocket expenditure (OOPE), half of enrolled households still took loans from moneylenders to pay for healthcare.</div>
+    </div>
+    <div class="card"><div class="card-accent orange"></div>
+      <div class="card-label">OPD Coverage</div>
+      <div class="card-value orange" style="font-size:1.5rem">None</div>
+      <div class="card-desc">The biggest driver of OOPE in India is outpatient expenditure — medicines and routine consultations. The scheme provides zero coverage here.</div>
+    </div>
+    <div class="card"><div class="card-accent gold"></div>
+      <div class="card-label">Primary Care Integration</div>
+      <div class="card-value gold" style="font-size:1.5rem">Weak</div>
+      <div class="card-desc">Health & Wellness Centres (HWCs) — the primary care arm of Ayushman Bharat — have not been adequately funded or linked to the PMJAY insurance arm, creating a two-speed system.</div>
+    </div>
+    <div class="card"><div class="card-accent red"></div>
+      <div class="card-label">Mental Health Coverage</div>
+      <div class="card-value red" style="font-size:1.5rem">Absent</div>
+      <div class="card-desc">Mental health conditions are largely excluded from the health benefit packages despite India bearing 15% of the global mental health burden.</div>
+    </div>
+  </div>
+
+  <div class="chart-block">
+    <div class="chart-title">Out-of-Pocket Expenditure Trend</div>
+    <div class="chart-heading">OOPE as % of Total Health Expenditure in India</div>
+    <div class="chart-source">Source: Economic Survey 2024–25; NHA Reports 2015–2022</div>
+    <canvas id="oopeChart" style="max-height:300px"></canvas>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="finding">
+        <div class="finding-label">🔍 The Inpatient Bias Problem</div>
+        <p>PMJAY is entirely focused on hospitalisation. Yet evidence globally shows that <strong>preventive care and outpatient management dramatically reduce the need for expensive hospitalisation</strong>. By funding only the most expensive end of care, the scheme may be creating perverse incentives for unnecessary admissions while ignoring the upstream healthcare that would reduce hospitalisation costs.</p>
+      </div>
+      <div class="finding">
+        <div class="finding-label">🔍 Private Hospital Dominance</div>
+        <p>42.4% of empanelled hospitals are private (12,705 hospitals). Multiple reports indicate <strong>private hospitals upcoded procedures, performed unnecessary surgeries</strong> (particularly for conditions like hysterectomies, cataracts) to maximise reimbursements. This is a documented global problem with insurance-linked schemes.</p>
+      </div>
+    </div>
+    <div>
+      <div class="chart-block" style="margin-bottom:0">
+        <div class="chart-title">Health Expenditure Composition</div>
+        <div class="chart-heading">What PMJAY Covers vs What People Actually Spend On</div>
+        <div class="chart-source">Source: NHA Health Accounts, estimates</div>
+        <canvas id="expenditureChart" style="max-height:260px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="finding">
+    <div class="finding-label">🔍 Awareness = Access Gap</div>
+    <p>Studies in Uttar Pradesh (Gautam Buddha Nagar) and other states show that <strong>ignorance about the scheme is the primary reason for low utilisation</strong> — not lack of cards. In urban areas especially, many eligible families don't know what conditions are covered, which hospitals are empanelled, or how to access care. IEC (Information, Education, Communication) cells were formed in only 7 of audited states.</p>
+  </div>
+</div>
+
+<!-- ====== TAB 5: RECOMMENDATIONS ====== -->
+<div id="tab-recommendations" class="tab-panel">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-title-block">
+      <div class="section-eyebrow">Policy Analysis</div>
+      <div class="section-title">What Needs to Change — Evidence-Based Recommendations</div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div class="rec-num">01</div>
+    <div class="rec-body">
+      <h3>Update Beneficiary Database From SECC 2011</h3>
+      <p>The scheme must migrate from 14-year-old data to a dynamic, real-time poverty identification system linked to existing databases (NFSA, PM-KISAN, Jan Dhan). A living registry would include newly poor households and exclude those who have escaped poverty, drastically improving targeting efficiency. Pilot models from Andhra Pradesh's "Aarogyasri" scheme show this is achievable.</p>
+    </div>
+  </div>
+  <div class="rec-item">
+    <div class="rec-num">02</div>
+    <div class="rec-body">
+      <h3>Extend Coverage to Outpatient Care & Medicines</h3>
+      <p>As long as PMJAY covers only hospitalisation, out-of-pocket expenditure will remain catastrophic for the poor. A phased expansion to include generic medicine access (via Jan Aushadhi stores), outpatient diagnostics, and chronic disease management (diabetes, hypertension) would address the most common drivers of medical impoverishment.</p>
+    </div>
+  </div>
+  <div class="rec-item">
+    <div class="rec-num">03</div>
+    <div class="rec-body">
+      <h3>Fix the IT System — Real Anti-Fraud Controls</h3>
+      <p>The CAG found the technology backbone had no mechanisms to flag simultaneous hospitalisations, dead-patient claims, or duplicate Aadhaar registrations. A minimum requirement: real-time deduplication, biometric verification at admission (not just during card issuance), and automated flagging of statistical outliers in hospital billing patterns.</p>
+    </div>
+  </div>
+  <div class="rec-item">
+    <div class="rec-num">04</div>
+    <div class="rec-body">
+      <h3>Dramatically Increase the Budget</h3>
+      <p>The 2025 budget of ₹9,406 crore is approximately 18× lower than what would be required to actually provide ₹5 lakh coverage to the claimed 50 crore beneficiaries. Either the coverage promise must be honest about its limits, or the budget must increase substantially. The current arrangement creates an unfunded mandate that states and beneficiaries absorb in hidden costs.</p>
+    </div>
+  </div>
+  <div class="rec-item">
+    <div class="rec-num">05</div>
+    <div class="rec-body">
+      <h3>Resolve Centre–State Funding Disputes</h3>
+      <p>Beneficiaries cannot be collateral damage in political disputes about fund-sharing ratios. A binding, transparent formula for Centre–State cost-sharing — with automatic release of funds on a pre-defined schedule — would ensure continuity of care and reduce hospital refusals. An independent ombudsman mechanism for beneficiary grievances is also needed.</p>
+    </div>
+  </div>
+  <div class="rec-item">
+    <div class="rec-num">06</div>
+    <div class="rec-body">
+      <h3>Integrate Primary and Secondary Care</h3>
+      <p>The Health and Wellness Centre (HWC) component of Ayushman Bharat has been severely underfunded and poorly integrated with the PMJAY insurance arm. A proper referral pathway — from HWC to PMJAY-empanelled hospitals — would reduce unnecessary hospitalisation, improve early detection, and reduce long-term costs while improving outcomes.</p>
+    </div>
+  </div>
+  <div class="rec-item" style="border:none">
+    <div class="rec-num">07</div>
+    <div class="rec-body">
+      <h3>Mandate Independent Third-Party Outcome Evaluation</h3>
+      <p>Currently, most evaluation data comes from government sources or scheme-funded reports. An independent, longitudinal study tracking actual health outcomes (not just claims data) for PMJAY beneficiaries vs matched controls would generate credible evidence on whether the scheme is genuinely improving population health — the only metric that ultimately matters.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Data Sources & References</strong><br/>
+  CAG Report No. 11 of 2023 — Performance Audit on PMJAY, Parliament of India · 
+  Ministry of Health & Family Welfare, GoI — Parliamentary replies, Feb 2024 · 
+  NHA Annual Report 2022–23 · 
+  Economic Survey 2024–25 ·
+  CII-BCG Health Insurance Vision 2025 ·
+  Frontiers in Public Health (2026): Barriers to PM-JAY in Jammu & Kashmir ·
+  Advances in Consumer Research (2025): Financial Impact of AB-PMJAY ·
+  Indian Journal of Community Medicine (2025): Awareness in Gautam Buddha Nagar ·
+  Times of India (2022): 26% fraudulent claims in Punjab & Haryana ·
+  National Herald India · The Quint (FIT) · NewsClick · Janata Weekly
+  <br/><br/>
+  <strong>Note:</strong> This analysis is prepared for academic purposes. Data compiled from public government records, CAG audits, and peer-reviewed literature. Charts use official data where available; estimated figures are clearly marked.
+</footer>
+
+<script>
+// ============ CHARTS ============
+
+// BUDGET CHART
+new Chart(document.getElementById('budgetChart'), {
+  type: 'bar',
+  data: {
+    labels: ['2018-19','2019-20','2020-21','2021-22','2022-23','2023-24','2024-25'],
+    datasets: [
+      {
+        label: 'Budget Estimate (₹ Cr)',
+        data: [2400, 6400, 6975, 6400, 7200, 7500, 9406],
+        backgroundColor: '#0d0d0d',
+      },
+      {
+        label: 'Revised Estimate (₹ Cr)',
+        data: [2160, 3200, 3475, 3400, 7200, 6881, 9406],
+        backgroundColor: '#c9a84c',
+      },
+      {
+        label: 'Funds Utilised (₹ Cr)',
+        data: [1630, 2800, 3100, 3200, 6000, 6500, 3920],
+        backgroundColor: '#c0392b',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom', labels: { font: { family: 'IBM Plex Mono', size: 10 } } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 10 } } },
+      y: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } }, grid: { color: '#ede8dc' } }
+    }
+  }
+});
+
+// CLAIMS CHART
+new Chart(document.getElementById('claimsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['2019-20','2020-21','2021-22','2022-23'],
+    datasets: [
+      { label: 'Claims Made (M)', data: [9.3, 8.1, 12.1, 15.4], backgroundColor: '#0d0d0d' },
+      { label: 'Claims Settled (M)', data: [8.8, 7.6, 11.5, 14.7], backgroundColor: '#c0392b' }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom', labels: { font: { family: 'IBM Plex Mono', size: 9 } } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 9 } } },
+      y: { ticks: { font: { family: 'IBM Plex Mono', size: 9 } }, grid: { color: '#ede8dc' } }
+    }
+  }
+});
+
+// HOSPITAL DONUT
+new Chart(document.getElementById('hospitalChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Public Hospitals (57.6%)', 'Private Hospitals (42.4%)'],
+    datasets: [{
+      data: [17267, 12705],
+      backgroundColor: ['#0d0d0d', '#c0392b'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom', labels: { font: { family: 'IBM Plex Mono', size: 10 } } } }
+  }
+});
+
+// ENROLLMENT
+new Chart(document.getElementById('enrollmentChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Eligible HH (Estimated 12Cr)', 'Cards Created (9.2Cr)', 'Households Actually Used Scheme'],
+    datasets: [{
+      label: 'Households (Crore)',
+      data: [12, 9.2, 3.1],
+      backgroundColor: ['#0d0d0d','#c9a84c','#c0392b'],
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { family: 'IBM Plex Mono', size: 10 } }, grid: { color: '#ede8dc' } },
+      y: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 10 } } }
+    }
+  }
+});
+
+// FRAUD BAR
+new Chart(document.getElementById('fraudChart'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Beneficiaries on\ninvalid mobile',
+      'Dead patient\nclaims filed',
+      'Claims paid\nfor dead patients',
+      'Simultaneous\nhospitalisations',
+      'Ineligible enrolments\n(J&K only)'
+    ],
+    datasets: [{
+      label: 'Number of Cases',
+      data: [749820, 214923, 3903, 78396, 17200],
+      backgroundColor: ['#c0392b','#c0392b','#e67e22','#e67e22','#c9a84c'],
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 9 } } },
+      y: { ticks: { font: { family: 'IBM Plex Mono', size: 9 }, callback: v => v.toLocaleString() }, grid: { color: '#ede8dc' } }
+    }
+  }
+});
+
+// OOPE TREND
+new Chart(document.getElementById('oopeChart'), {
+  type: 'line',
+  data: {
+    labels: ['FY2015','FY2016','FY2017','FY2018','FY2019(PMJAY→)','FY2020','FY2021','FY2022'],
+    datasets: [
+      {
+        label: 'OOPE as % of Total Health Expenditure',
+        data: [62.6, 61.1, 59.8, 58.7, 57.0, 52.1, 47.1, 39.4],
+        borderColor: '#c0392b',
+        backgroundColor: 'rgba(192,57,43,0.08)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 4,
+      },
+      {
+        label: 'Govt Health Expenditure as % of THE',
+        data: [29.0, 30.5, 32.1, 33.8, 35.5, 40.3, 45.1, 48.0],
+        borderColor: '#27ae60',
+        backgroundColor: 'rgba(39,174,96,0.05)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 4,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { family: 'IBM Plex Mono', size: 10 } } },
+      annotation: {}
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 9 } } },
+      y: {
+        min: 20, max: 75,
+        ticks: { font: { family: 'IBM Plex Mono', size: 9 }, callback: v => v + '%' },
+        grid: { color: '#ede8dc' }
+      }
+    }
+  }
+});
+
+// EXPENDITURE DONUT
+new Chart(document.getElementById('expenditureChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Outpatient / OPD (NOT covered)', 'Medicines (NOT covered)', 'Inpatient (Covered by PMJAY)', 'Other'],
+    datasets: [{
+      data: [48, 28, 17, 7],
+      backgroundColor: ['#c0392b','#e67e22','#27ae60','#bfb9ad'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { family: 'IBM Plex Mono', size: 9 }, boxWidth: 12 } },
+      tooltip: { callbacks: { label: ctx => ctx.label + ': ~' + ctx.parsed + '%' } }
+    }
+  }
+});
+
+// STATE GRID
+const states = [
+  { name: 'Andhra Pradesh', pct: 72, color: '#27ae60' },
+  { name: 'Chhattisgarh', pct: 61, color: '#e67e22' },
+  { name: 'Gujarat', pct: 58, color: '#e67e22' },
+  { name: 'Haryana', pct: 44, color: '#c0392b' },
+  { name: 'Himachal Pradesh', pct: 67, color: '#e67e22' },
+  { name: 'Jharkhand', pct: 55, color: '#e67e22' },
+  { name: 'Karnataka', pct: 49, color: '#c0392b' },
+  { name: 'Kerala', pct: 53, color: '#e67e22' },
+  { name: 'Madhya Pradesh', pct: 48, color: '#c0392b' },
+  { name: 'Maharashtra', pct: 51, color: '#e67e22' },
+  { name: 'Punjab', pct: 39, color: '#c0392b' },
+  { name: 'Rajasthan', pct: 64, color: '#c9a84c' },
+  { name: 'Tamil Nadu', pct: 68, color: '#c9a84c' },
+  { name: 'Uttar Pradesh', pct: 42, color: '#c0392b' },
+  { name: 'Uttarakhand', pct: 58, color: '#e67e22' },
+  { name: 'Assam', pct: 71, color: '#27ae60' },
+];
+const grid = document.getElementById('stateGrid');
+states.forEach(s => {
+  grid.innerHTML += `
+    <div class="state-card">
+      <div class="state-name">${s.name}</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${s.pct}%; background:${s.color}"></div></div>
+      <div class="state-pct">${s.pct}% est. utilisation</div>
+    </div>`;
+});
+
+// TAB SWITCHING
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
